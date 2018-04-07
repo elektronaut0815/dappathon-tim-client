@@ -11,7 +11,7 @@ import './css/open-sans.css';
 import './css/pure-min.css';
 import './App.css';
 
-const SERVER_IP = '0.0.0.0'; // TODO
+const SERVER_IP = '192.168.178.85:3000/guest-arrived';
 
 class App extends Component {
     constructor(props) {
@@ -19,8 +19,8 @@ class App extends Component {
 
         this.state = {
             showQRCode: false,
-            publicKey: '',
-            privSeed: '',
+            guestAddress: '',
+            privateSeed: '',
             web3: null
         };
         this.buyTicket = this.buyTicket.bind(this);
@@ -37,22 +37,10 @@ class App extends Component {
                 this.setState({
                     web3: results.web3
                 });
-
-                // Instantiate contract once web3 provided.
-                this.instantiateContract();
             })
             .catch(() => {
                 console.log('Error finding web3.');
             });
-    }
-
-    instantiateContract() {
-        /*
-     * SMART CONTRACT EXAMPLE
-     *
-     * Normally these functions would be called in the context of a
-     * state management library, but for convenience I've placed them here.
-     */
     }
 
     render() {
@@ -91,14 +79,14 @@ class App extends Component {
 
     generateQRCodeURI() {
         const baseUri = `http://${SERVER_IP}`;
-        const objectString = JSON.stringify(this.getQRCodeDataObject());
-        return encodeURI(`${baseUri}/?query=${objectString}`);
+        const object = this.getQRCodeDataObject();
+        return encodeURI(`${baseUri}?guestAddress=${object.guestAddress}&privateSeed=${object.privateSeed}`);
     }
 
     getQRCodeDataObject() {
         return {
-            publicKey: this.state.publicKey,
-            privSeed: this.state.privSeed
+            guestAddress: this.state.guestAddress,
+            privateSeed: this.state.privateSeed
         };
     }
 
@@ -110,7 +98,7 @@ class App extends Component {
         let timInstance;
 
         this.state.web3.eth.getAccounts((error, accounts) => {
-            let privSeed, hashOfSeed;
+            let privateSeed, hashOfSeed;
             tim
                 .deployed()
                 .then(instance => {
@@ -118,20 +106,20 @@ class App extends Component {
 
                     BigNumber.config({ CRYPTO: true });
                     BigNumber.config({ EXPONENTIAL_AT: 38 });
-                    privSeed = BigNumber.random(37).multipliedBy(10e37);
-                    hashOfSeed = Web3Utils.soliditySha3(privSeed);
-                    privSeed = privSeed.toString();
+                    privateSeed = BigNumber.random(37).multipliedBy(10e37);
+                    hashOfSeed = Web3Utils.soliditySha3(privateSeed);
+                    privateSeed = privateSeed.toString();
 
                     return timInstance.buyTicket(hashOfSeed, {
-                        value: this.state.web3.toWei(0.1, 'ether'),
+                        value: this.state.web3.utils.toWei('0.1', 'ether'),
                         from: accounts[0]
                     });
                 })
                 .then(() => {
                     this.setState({
                         showQRCode: true,
-                        publicKey: accounts[0],
-                        privSeed
+                        guestAddress: accounts[0],
+                        privateSeed
                     });
                 });
         });
