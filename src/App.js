@@ -48,7 +48,7 @@ class App extends Component {
             <div className="App">
                 <nav className="navbar pure-menu pure-menu-horizontal">
                     <a href="#" className="pure-menu-heading pure-menu-link">
-                        Truffle Box
+                        TIM
                     </a>
                 </nav>
 
@@ -80,7 +80,11 @@ class App extends Component {
     generateQRCodeURI() {
         const baseUri = `http://${SERVER_IP}`;
         const object = this.getQRCodeDataObject();
-        return encodeURI(`${baseUri}?guestAddress=${object.guestAddress}&privateSeed=${object.privateSeed}`);
+        return encodeURI(
+            `${baseUri}?guestAddress=${object.guestAddress}&privateSeed=${
+                object.privateSeed
+            }`
+        );
     }
 
     getQRCodeDataObject() {
